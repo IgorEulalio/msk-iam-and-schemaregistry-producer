@@ -1,0 +1,10 @@
+{"namespace": "com.igoreul",
+  "type": "record",
+  "name": "User",
+  "fields": [
+    {"name": "id", "type": "string", "default": ""},
+    {"name": "name", "type": "string"},
+    {"name": "favorite_number",  "type": "int"},
+    {"name": "favorite_color", "type": "string"}
+  ]
+}
