@@ -31,6 +31,9 @@ public class UserController {
     private String regionName;
     @Value("${topic}")
     private String topic;
+    @Value("${truststore-key}")
+    private String truststoreKey;
+
     @PostMapping(value = "/")
     public ResponseEntity<UserDTO> post(@RequestBody @Valid UserDTO userDTO){
 
@@ -40,10 +43,14 @@ public class UserController {
     }
 
     private void sendUserToKafka(User user) {
-        KafkaProducer<String, User> producer = new KafkaProducer<String,User>(getProducerConfig());
+        KafkaProducer<String, User> producer = getKafkaProducer();
         logger.info("Starting to send records...");
         ProducerRecord<String, User> record = new ProducerRecord<String, User>(topic, user.getId(), user);
         producer.send(record, new ProducerCallback());
+    }
+
+    private KafkaProducer<String, User> getKafkaProducer() {
+        return new KafkaProducer<String,User>(getProducerConfig());
     }
 
     private Properties getProducerConfig() {
@@ -53,16 +60,15 @@ public class UserController {
         props.put(ProducerConfig.CLIENT_ID_CONFIG,"msk-cross-account-gsr-producer");
         props.put("sasl.mechanism", "AWS_MSK_IAM");
         props.put("security.protocol", "SASL_SSL");
-        props.put("ssl.truststore.location", "/Users/igoreulalio/Documents/projects/msk-iam-and-schemaregistry-producer/kafka.client.trustore.jks");
+        props.put("ssl.truststore.location", truststoreKey);
         props.put("sasl.jaas.config", "software.amazon.msk.auth.iam.IAMLoginModule required;");
         props.put("sasl.client.callback.handler.class", "software.amazon.msk.auth.iam.IAMClientCallbackHandler");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GlueSchemaRegistryKafkaSerializer.class.getName());
         props.put(AWSSchemaRegistryConstants.DATA_FORMAT, DataFormat.AVRO.name());
         props.put(AWSSchemaRegistryConstants.AWS_REGION, regionName);
-        props.put(AWSSchemaRegistryConstants.REGISTRY_NAME, "microservices-cluster-featurename-registry");
-        props.put(AWSSchemaRegistryConstants.SCHEMA_NAME, "users-schema");
-//      props.put(AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING, true);
+        props.put(AWSSchemaRegistryConstants.REGISTRY_NAME, "my-registry");
+        props.put(AWSSchemaRegistryConstants.SCHEMA_NAME, "my-schema");
         props.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.SPECIFIC_RECORD.getName());
         return props;
     }
