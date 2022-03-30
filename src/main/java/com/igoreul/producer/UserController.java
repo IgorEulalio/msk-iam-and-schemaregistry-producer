@@ -70,6 +70,9 @@ public class UserController {
         props.put(AWSSchemaRegistryConstants.REGISTRY_NAME, "my-registry");
         props.put(AWSSchemaRegistryConstants.SCHEMA_NAME, "my-schema");
         props.put(AWSSchemaRegistryConstants.AVRO_RECORD_TYPE, AvroRecordType.SPECIFIC_RECORD.getName());
+//        Without this field, you need to create and register your schema in advance
+        props.put(AWSSchemaRegistryConstants.SCHEMA_AUTO_REGISTRATION_SETTING, true);
+
         return props;
     }
 
